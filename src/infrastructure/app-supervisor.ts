@@ -104,20 +104,22 @@ export class AppSupervisor extends DurableObject<CloudflareBindings> {
     return deleted ? this.toRecord(deleted) : null;
   }
 
-  override fetch(request: Request): Promise<Response> {
+  override async fetch(request: Request): Promise<Response> {
     const requestUrl = new URL(request.url);
     const appMatch = /^\/app\/([^/]+)(\/.*)?$/.exec(requestUrl.pathname);
     const id = appMatch?.[1];
     if (!id) {
-      return Promise.resolve(
-        Response.json({ error: 'アプリ ID がありません' }, { status: 400 }),
+      return Response.json(
+        { error: 'アプリ ID がありません' },
+        { status: 400 },
       );
     }
 
     const appRow = this.getApp(decodeURIComponent(id));
     if (!appRow || appRow.status === 'deleted') {
-      return Promise.resolve(
-        Response.json({ error: 'アプリが見つかりません' }, { status: 404 }),
+      return Response.json(
+        { error: 'アプリが見つかりません' },
+        { status: 404 },
       );
     }
 
@@ -144,7 +146,36 @@ export class AppSupervisor extends DurableObject<CloudflareBindings> {
     });
 
     requestUrl.pathname = appMatch[2] ?? '/';
-    return facet.fetch(new Request(requestUrl.toString(), request));
+    const response = await facet.fetch(
+      new Request(requestUrl.toString(), request),
+    );
+    const contentType = response.headers.get('content-type') ?? '';
+
+    if (!contentType.toLowerCase().includes('text/html')) {
+      return response;
+    }
+
+    const appBasePath = `/app/${appRow.id}/`;
+    return new HTMLRewriter()
+      .on('head', {
+        element(element) {
+          element.prepend(`<base href="${appBasePath}">`, { html: true });
+        },
+      })
+      .on('[action],[href],[src]', {
+        element(element) {
+          for (const attribute of ['action', 'href', 'src']) {
+            const value = element.getAttribute(attribute);
+            if (value?.startsWith('/') && !value.startsWith('//')) {
+              element.setAttribute(
+                attribute,
+                `${appBasePath}${value.slice(1)}`,
+              );
+            }
+          }
+        },
+      })
+      .transform(response);
   }
 
   private getApp(id: string): AppRow | null {

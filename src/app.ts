@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { appRefererProxyRoutes } from './routes/app-referer-proxy';
 import { appProxyRoutes } from './routes/app-proxy';
 import { apiRoutes } from './routes/api';
 import { dashboardRoutes } from './routes/dashboard';
@@ -10,6 +11,7 @@ export function createApp() {
   app.route('/', dashboardRoutes);
   app.route('/api', apiRoutes);
   app.route('/', appProxyRoutes);
+  app.route('/', appRefererProxyRoutes);
 
   app.notFound((c) => c.json({ error: '見つかりません' }, 404));
 

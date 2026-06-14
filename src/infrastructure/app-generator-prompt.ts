@@ -15,7 +15,8 @@ export const APP_GENERATOR_SYSTEM_PROMPT = `
 - export class App extends DurableObject を必ず定義する
 - App は fetch(request) を実装し、HTML または JSON を返す
 - 永続化が必要な状態は this.ctx.storage.sql または this.ctx.storage.kv を使う
-- UI の fetch は相対パスを使う
+- UI の fetch、form action、a href、script src、link href は必ず相対パスを使う
+- "/tasks" のような / 始まりの root 絶対パスは禁止。代わりに "tasks" または "./tasks" を使う
 - 生成コード内に秘密情報や API キーを含めない
 - URL は親 Worker の /app/:id/ 以下で動く前提にする
 

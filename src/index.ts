@@ -1,9 +1,5 @@
-import { Hono } from 'hono';
+import { createApp } from './app';
 
-const app = new Hono<{ Bindings: CloudflareBindings }>();
+export { AppSupervisor } from './infrastructure/app-supervisor';
 
-app.get('/', (c) => {
-  return c.text('Hello Hono!');
-});
-
-export default app;
+export default createApp();

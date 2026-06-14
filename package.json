@@ -4,9 +4,9 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy --minify",
-    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+    "dev": "bunx wrangler dev",
+    "deploy": "bunx wrangler deploy --minify",
+    "cf-typegen": "bunx wrangler types --env-interface CloudflareBindings",
     "format": "biome format --write .",
     "lint": "biome lint .",
     "lint:ai": "set -o pipefail && biome lint . --reporter=github 2>&1 | { grep '^::' || true; }",
